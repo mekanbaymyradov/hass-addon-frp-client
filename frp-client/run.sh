@@ -32,7 +32,5 @@ cd /usr/src
 # Run FRP; it will automatically evaluate the template tags in frpc.toml
 ./frpc -c $CONFIG_PATH & WAIT_PIDS+=($!)
 
-tail -f /share/frpc.log &
-
 trap "stop_frpc" SIGTERM SIGHUP
 wait "${WAIT_PIDS[@]}"

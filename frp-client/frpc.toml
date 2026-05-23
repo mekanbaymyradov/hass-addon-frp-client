@@ -6,7 +6,7 @@ transport.tls.enable = true
 
 log.to = "console"
 # trace, debug, info, warn, error
-log.level = "trace"
+log.level = "info"
 log.maxDays = 3
 
 [[proxies]]
