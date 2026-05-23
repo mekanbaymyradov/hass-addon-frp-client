@@ -8,23 +8,28 @@ function stop_frpc() {
     kill -15 "${WAIT_PIDS[@]}"
 }
 
-bashio::log.info "Copying configuration."
-cp $DEFAULT_CONFIG_PATH $CONFIG_PATH
-sed -i "s/serverAddr = \"your_server_addr\"/serverAddr = \"$(bashio::config 'serverAddr')\"/" $CONFIG_PATH
-sed -i "s/serverPort = 7000/serverPort = $(bashio::config 'serverPort')/" $CONFIG_PATH
-sed -i "s/auth.token = \"123456789\"/auth.token = \"$(bashio::config 'authToken')\"/" $CONFIG_PATH
-sed -i "s/webServer.port = 7500/webServer.port = $(bashio::config 'webServerPort')/" $CONFIG_PATH
-sed -i "s/webServer.user = \"admin\"/webServer.user = \"$(bashio::config 'webServerUser')\"/" $CONFIG_PATH
-sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::config 'webServerPassword')\"/" $CONFIG_PATH
-sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
-sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
+bashio::log.info "Reading add-on configuration..."
 
+# Export configuration values as environment variables for FRP to consume natively
+export FRP_SERVER_ADDR="$(bashio::config 'serverAddr')"
+export FRP_SERVER_PORT="$(bashio::config 'serverPort')"
+export FRP_AUTH_TOKEN="$(bashio::config 'authToken')"
+export FRP_PROXY_NAME="$(bashio::config 'proxyName')"
+export LOCAL_PORT="$(bashio::config 'localPort')"
+export REMOTE_PORT="$(bashio::config 'remotePort')"
+
+# Copy the template over only if it doesn't already exist in /share
+if [ ! -f "$CONFIG_PATH" ]; then
+    bashio::log.info "Creating initial frpc.toml from template."
+    cp $DEFAULT_CONFIG_PATH $CONFIG_PATH
+else
+    bashio::log.info "Using existing configuration at $CONFIG_PATH"
+fi
 
 bashio::log.info "Starting frp client"
 
-cat $CONFIG_PATH
-
 cd /usr/src
+# Run FRP; it will automatically evaluate the template tags in frpc.toml
 ./frpc -c $CONFIG_PATH & WAIT_PIDS+=($!)
 
 tail -f /share/frpc.log &
