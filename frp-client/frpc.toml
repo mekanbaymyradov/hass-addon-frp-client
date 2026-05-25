@@ -4,6 +4,8 @@ auth.method = "token"
 auth.token = "{{ .Envs.FRP_AUTH_TOKEN }}"
 transport.tls.enable = true
 
+loginFailExit = false
+
 log.to = "console"
 # trace, debug, info, warn, error
 log.level = "info"
@@ -17,3 +19,9 @@ transport.useCompression = true
 localIP = "127.0.0.1"
 localPort = {{ .Envs.LOCAL_PORT }}
 remotePort = {{ .Envs.REMOTE_PORT }}
+
+# Enable TCP health check
+healthCheck.type = "tcp"
+healthCheck.timeoutSeconds = 3
+healthCheck.maxFailed = 3
+healthCheck.intervalSeconds = 10
